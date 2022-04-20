@@ -1,0 +1,33 @@
+---
+- name: setup firewall rules
+  tags: fw
+  block:  
+    - name: open firewall ports for host
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      with_items:
+        - 22
+
+    - name: open firewall ports with forwarding
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+        route: yes
+      with_items:
+        - 8833
+        - 8086
+        
+    - name: reject all other traffic
+      ufw:
+        policy: "{{ item.policy }}" 
+        direction: "{{ item.dir }}"
+      with_items:
+        - { dir: "incoming", policy: "deny"}
+        - { dir: "outgoing", policy: "allow"}
+
+    - name: enable ufw
+      ufw:
+        state: enabled

@@ -1,0 +1,17 @@
+---
+- name: install raspberry pi
+  hosts: all
+  remote_user: ubuntu
+  become: true
+
+  tasks:
+    - name: apt-stuff
+      include_tasks: tasks/apt.yml
+
+    - name: firewall
+      include_tasks: tasks/firewall.yml
+      tags: fw
+    
+    - name: podman
+      include_tasks: tasks/podman.yml
+      tags: podman

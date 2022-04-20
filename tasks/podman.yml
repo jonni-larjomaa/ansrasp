@@ -1,0 +1,44 @@
+---
+- name: podman
+  tags: podman
+  block:
+    - name: setup grafana
+      containers.podman.podman_container:
+        name: grafana
+        image: grafana/grafana:main
+        state: started
+        recreate: yes
+        ports:
+          - "8833:3000"
+        detach: yes
+
+    - name: infludb data directory
+      file:
+        path: /influxdbv2/{{ item }}
+        owner: root
+        group: root
+        state: directory
+        mode: '0777'
+      with_items:
+        - data
+        - config
+        
+    - name: setup influxdb
+      containers.podman.podman_container:
+        name: influxdb
+        image: influxdb:alpine
+        state: started
+        recreate: yes
+        ports:
+          - "8086:8086"
+        env:
+          DOCKER_INFLUXDB_INIT_MODE: "setup"
+          DOCKER_INFLUXDB_INIT_USERNAME: "ubuntu"
+          DOCKER_INFLUXDB_INIT_PASSWORD: "foobar123"
+          DOCKER_INFLUXDB_INIT_ORG: "testi"
+          DOCKER_INFLUXDB_INIT_BUCKET: "ns"
+        volume:
+          - /influxdbv2/data:/var/lib/influxdb2
+          - /influxdbv2/config:/etc/influxdb2
+
+
